@@ -1,0 +1,6 @@
+
+include tox.ini
+recursive-include invites/templates *
+recursive-include invites/static *
+recursive-include tests *.py *.rst *.json *.xml *.png *.jpg *.jpeg *.gif *.ico
+
