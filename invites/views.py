@@ -24,7 +24,6 @@ def login(request, template="accounts/account_login.html"):
     if request.method == "POST":
         if request.POST.get("login_type") == "quick":
             f = quick_form
-            authenticated_user = quick_form.save()
         else:
             f = form
         if f.is_valid():
