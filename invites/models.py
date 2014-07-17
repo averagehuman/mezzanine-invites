@@ -65,9 +65,6 @@ class InvitationCodeManager(models.Manager):
             return
         if code.registered_to and code.registered_to != email:
             return
-        if code.registered_by and getattr(settings, 'INVITE_CODES_ARE_REUSABLE', True) is False:
-            # the code has already been used to login to the site
-            return
         if not code.expired:
             return code
     

@@ -29,9 +29,9 @@ class InviteAuthBackend(object):
                         )
                         code.registered_by = user
                         code.registered_date = datetime.now()
+                        if getattr(settings, 'INVITE_CODES_ARE_REUSABLE', True) is False:
+                            code.expired = True
                         code.save()
-                    elif getattr(settings, 'INVITE_CODES_ARE_REUSABLE', True) is False:
-                        raise PermissionDenied
                     return code.registered_by
         return None
 
