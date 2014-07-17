@@ -32,7 +32,6 @@ def login(request, template="accounts/account_login.html"):
             auth_login(request, authenticated_user)
             request.logged_in = True
             response = login_redirect(request)
-            response.set_cookie(NGINX_CACHE_COOKIE, '')
             return response
     context = {"form": form, "quick_form": quick_form, "title": _("Log in")}
     return render(request, template, context)
