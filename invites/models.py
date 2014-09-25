@@ -1,5 +1,4 @@
 
-from datetime import datetime
 from django.conf import settings
 from django.dispatch import receiver
 from django.db import models
@@ -15,9 +14,10 @@ from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 
 from django_extensions.db.fields import (
     ModificationDateTimeField, CreationDateTimeField, AutoSlugField,
+    UUIDField,
 )
 
-User = get_user_model()
+AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 
 def get_code_length():
     try:
@@ -30,7 +30,9 @@ def get_code_length():
 
 class InvitationCodeManager(models.Manager):
 
-    def create_invite_code(self, site=None, email=None, creator=None):
+    def create_invite_code(
+        self, email, site=None, name=None, phone=None, creator=None
+    ):
         chars = 'ABCDEFGHJKMPQRSTUVWXYZ'
         nums = '23456789'
         site = site or Site.objects.get_current()
@@ -40,7 +42,10 @@ class InvitationCodeManager(models.Manager):
             key += get_random_string(N-3, chars) + get_random_string(3, nums)
             if not self.filter(site=site, key=key).exists():
                 break
-        code = self.model(key=key, site=site, registered_to=email, created_by=creator)
+        code = self.model(
+            key=key, site=site, registered_to=email, registered_name=name,
+            registered_phone=phone, created_by=creator
+        )
         code.save()
         return code
 
@@ -57,53 +62,48 @@ class InvitationCodeManager(models.Manager):
         except ValueError:
             return
         site = site or Site.objects.get_current()
-        # key as saved is prefixed with the site id
         key = str(site.id) + '-' + key
         try:
             code = self.get(site=site, key=key)
         except:
             return
-        if code.registered_to and code.registered_to != email:
+        if email and email != code.registered_to:
             return
         if not code.expired:
             return code
     
 class InvitationCode(models.Model):
-    """
-    registered_to - an email address associated with a given code
-    registered_by - the site user who used the code to register
-    """
     site = models.ForeignKey(Site, related_name="invite_codes")
+    uuid = UUIDField(version=4, auto=True, unique=True)
     created_date = CreationDateTimeField(_('created date'))
-    created_by = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        editable=False,
-        verbose_name=_("created by"),
-        related_name="created_invites",
+    created_by = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
+    registered_to = models.EmailField('email', blank=False)
+    registered_name = models.CharField(
+        'name', max_length=70, blank=True, null=True
     )
-    registered_to = models.EmailField(blank=True, null=True)
-    registered_by = models.OneToOneField(
-        User,
-        blank=True,
-        null=True,
-        editable=False,
-        verbose_name=_("registered by"),
+    registered_phone = models.CharField(
+        'phone', max_length=20, blank=True, null=True
     )
-    registered_date = models.DateTimeField(blank=True, null=True, editable=False)
+    registered_date = models.DateTimeField(
+        _('registered date'), blank=True, null=True, editable=False
+    )
     expired = models.BooleanField(default=False)
-    key = models.CharField(max_length=12, editable=False)
+    key = models.CharField(max_length=12, blank=False, editable=False)
     objects = InvitationCodeManager()
 
     class Meta:
         unique_together = ('site', 'key')
 
-    def __unicode__(self):
-        return self.key
+    def __repr__(self):
+        return "<InvitationCode: %s>" % self.key
 
     @property
     def short_key(self):
         if self.key:
             return self.key.rpartition('-')[2]
+
+    def save(self, *args, **kwargs):
+        if not hasattr(self, 'site') or not self.site:
+            self.site_id = settings.SITE_ID
+        super(InvitationCode, self).save(*args, **kwargs)
 

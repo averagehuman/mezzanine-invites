@@ -331,6 +331,7 @@ if DEBUG:
 
 ALLOWED_HOSTS = ['*']
 
+AUTH_USER_MODEL = 'auth.User'
 
 # Mezzanine Settings
 ACCOUNTS_PROFILE_FORM_CLASS = "invites.forms.ProfileForm"
