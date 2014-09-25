@@ -67,6 +67,8 @@ class InvitationCodeManager(models.Manager):
             code = self.get(site=site, key=key)
         except:
             return
+        # *IF* an email is given then ensure that it matches, but at least for
+        # the "quick login" use case we don't want to insist on an email
         if email and email != code.registered_to:
             return
         if not code.expired:
