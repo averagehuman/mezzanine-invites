@@ -1,6 +1,7 @@
 
 git+ssh://git@github.com/boto/boto.git@neo#egg=boto
-Mezzanine<=3.1.10
+#Mezzanine<=3.1.10
+git+ssh://git@github.com/stephenmcd/mezzanine.git#egg=mezzanine
 Pillow<=2.5.3
 django_debug_toolbar<=1.2.1
 psycopg2<=2.5.4

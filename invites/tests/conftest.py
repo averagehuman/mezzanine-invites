@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture()
 def user(db):
-    """A Django test client logged in as an authenticated user"""
+    """A non-admin User"""
     from django.contrib.auth.models import User
 
     try:

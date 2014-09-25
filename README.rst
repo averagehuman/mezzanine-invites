@@ -10,11 +10,18 @@ Usage
 
 Create a code with the Django management command 'invite'::
 
-    ./bin/django invite --domain=mysite.com
+    ./bin/django invite
 
-Optionally, associate the code with an email address::
+which will prompt for an email address for the invitee.
 
-    ./bin/django invite --domain=mysite.com --email=joe.soap@lux.com
+You can also specify the email as a paramter::
+
+    ./bin/django invite --email=joe.soap@lux.com
+
+Invitation Codes are associated with a give `Site`, so if there are multiple
+sites,then you need to specify which by domain name::
+
+    ./bin/django invite --domain=joe.soap@lux.com
 
 In order for the invite code to be acceptable as a login token, add the
 `InviteAuthBackend` to the list of AUTHENTICATION_BACKENDS in settings::

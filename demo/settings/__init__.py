@@ -1,5 +1,5 @@
 
-DEBUG = True
+DEBUG = False
 NOCACHE = False
 DATABASES = None
 

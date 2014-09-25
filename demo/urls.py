@@ -40,6 +40,7 @@ urlpatterns += patterns("",
     ("^", include("invites.urls")),
     ("^", include("captcha.urls")),
     ("^", include("mezzanine.urls")),
+    url("^$", direct_to_template, {"template": "index.html"}, name="home"),
 
 )
 

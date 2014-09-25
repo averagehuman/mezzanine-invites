@@ -344,6 +344,7 @@ RATINGS_RANGE = (-1, 1)
 RATINGS_ACCOUNT_REQUIRED = True
 COMMENTS_ACCOUNT_REQUIRED = True
 
+SEARCH_MODEL_CHOICES = None
 # Invite Settings
 INVITE_CODE_LENGTH = 3
 INVITE_CODES_ARE_REUSABLE = True
@@ -400,3 +401,6 @@ LOGGING = {
 }
 
 
+##################
+# EMAIL SETTINGS #
+##################

@@ -1,19 +1,24 @@
+
 from __future__ import unicode_literals
 
-from django.contrib.auth import (authenticate, login as auth_login,
-                                               logout as auth_logout)
 from django.contrib.messages import info, error
+from django.contrib.auth import login as auth_login
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-from django.conf import settings
+from django.http import Http404, HttpResponse
+from django.template import loader, RequestContext
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
-from mezzanine.accounts import get_profile_form
+from mezzanine.conf import settings
+from mezzanine.utils.views import render
+from mezzanine.utils.email import send_mail_template
 from mezzanine.utils.email import send_verification_mail
 from mezzanine.utils.urls import login_redirect
-from mezzanine.utils.views import render
 
-from .forms import LoginForm, PasswordResetForm, QuickLoginForm
+from .models import InvitationCode
+from .forms import LoginForm, PasswordResetForm, QuickLoginForm, InviteForm
 
 def login(request, template="accounts/account_login.html"):
     """
@@ -51,4 +56,42 @@ def password_reset(request, template="accounts/account_password_reset.html"):
 def password_reset_sent(request, template="accounts/account_password_reset_sent.html"):
     context = {"title": _("Password Reset Pending")}
     return render(request, template, context)
+
+@login_required
+@staff_member_required
+def send_invite(request, template="invites/send_invite.html"):
+    form = InviteForm(data=request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        dummy = form.save(commit=False)
+        code = InvitationCode.objects.create_invite_code(
+            dummy.registered_to,
+            name=dummy.registered_name,
+            phone=dummy.registered_phone,
+            creator=request.user,
+        )
+        context = {
+            'code': code,
+            'login_url': request.build_absolute_uri(reverse("login")),
+            'site_name': settings.SITE_NAME,
+            'site_url': request.build_absolute_uri(reverse("home")),
+        }
+        try:
+            send_mail_template(
+                "Your Invitation to %s" % settings.SITE_NAME,
+                "invites/send_invite_email",
+                settings.DEFAULT_FROM_EMAIL,
+                code.registered_to,
+                context=context,
+                fail_silently=False,
+            )
+        except Exception as e:
+            error(request, "There was an error sending mail to %s. [%s]" % (
+                code.registered_to, e
+            ))
+        else:
+            info(request, "An Invite has been sent to %s." % code.registered_to)
+        return redirect(reverse("send-invite"))
+    context = {'form': form, 'title': 'Send Invitation'}
+    return render(request, template, context)
+
 

@@ -7,6 +7,8 @@ from captcha.fields import CaptchaField
 from mezzanine.core.forms import Html5Mixin
 from mezzanine.accounts import forms as base
 
+from .models import InvitationCode
+
 def captcha():
     return CaptchaField(
         label="Enter the letters you see below",
@@ -47,4 +49,10 @@ class QuickLoginForm(Html5Mixin, forms.Form):
         Just return the authenticated user - used for logging in.
         """
         return getattr(self, "_user", None)
+
+class InviteForm(forms.ModelForm):
+
+    class Meta:
+        model = InvitationCode
+        fields = ('registered_to', 'registered_name', 'registered_phone')
 

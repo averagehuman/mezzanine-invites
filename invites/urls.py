@@ -20,5 +20,7 @@ urlpatterns = patterns("invites.views",
         "password_reset_sent", name="mezzanine_password_reset_sent"),
     url("^%s%s$" % (PASSWORD_RESET_URL.strip("/"), _slash),
         "password_reset", name="mezzanine_password_reset"),
+    url("^invite%s$" % _slash, "send_invite", name="send-invite"),
 )
+
 
