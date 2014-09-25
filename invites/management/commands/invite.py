@@ -13,6 +13,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.utils.encoding import force_str, force_text
 from django.contrib.sites.models import Site
+from django.utils.six.moves import input
 
 from invites.models import InvitationCode
 
@@ -31,17 +32,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         domain = options.get('domain')
         if not domain:
-            raise CommandError("Missing argument: --domain")
-        try:
-            site = Site.objects.get(domain=domain)
-        except Site.DoesNotExist:
-            raise CommandError("A site with domain '%s' does not exist" % domain)
+            site = Site.objects.get_current()
+        else:
+            try:
+                site = Site.objects.get(domain=domain)
+            except Site.DoesNotExist:
+                raise CommandError("A site with domain '%s' does not exist" % domain)
         email = options.get('email')
+        while not email:
+            email = input(force_str('Email: '))
         verbosity = int(options.get('verbosity', 1))
         database = options.get('database')
-        code = InvitationCode.objects.create_invite_code(
-            site=site, email=email
-        )
-        print("%s - <%s>" % (code.short_key, email))
+        code = InvitationCode.objects.create_invite_code(email, site=site)
+        self.stdout.write(code.short_key)
 
 

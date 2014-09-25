@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load mezzanine_tags %}
+
+{% block meta_title %}{{title}}{% endblock %}
+{% block title %}{{title}}{% endblock %}
+{% block body_id %}account{% endblock %}
+
+{% block preamble %}
+{% endblock %}
+
+{% block main %}
+
+{% errors_for form %}
+
+<form method="post"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+	<fieldset{% if form.errors %} class="alert-border"{% endif %}>
+        <legend>{{title}}</legend>
+    {% fields_for form %}
+    <div class="form-actions">
+		{% block account_form_actions %}
+		<input class="small success button" type="submit" value="{{ title }}">
+		{% endblock %}
+    </div>
+    </fieldset>
+</form>
+{% endblock %}

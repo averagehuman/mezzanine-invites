@@ -1,0 +1,11 @@
+
+Hi,
+
+Thanks for signing up with {{site_name}}!
+
+Your Invite Code is: {{code.short_key}}
+
+You can use this to login at {{login_url}}. See you there!
+
+
+
