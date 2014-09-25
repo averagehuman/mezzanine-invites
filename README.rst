@@ -36,7 +36,7 @@ You can also specify the email as a paramter::
 Invitation Codes are associated with a given `Site`, so if there are multiple
 sites,then you need to specify which by domain name::
 
-    ./bin/django invite --domain=joe.soap@lux.com
+    ./bin/django invite --domain=example.com
 
 Once created you will be asked if you want to send the invitation right away.
 If you decline then the code will simply be printed out.
