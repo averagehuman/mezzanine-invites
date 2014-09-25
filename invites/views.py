@@ -13,12 +13,12 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from mezzanine.conf import settings
 from mezzanine.utils.views import render
-from mezzanine.utils.email import send_mail_template
 from mezzanine.utils.email import send_verification_mail
 from mezzanine.utils.urls import login_redirect
 
 from .models import InvitationCode
 from .forms import LoginForm, PasswordResetForm, QuickLoginForm, InviteForm
+from .utils import send_invite_code_mail
 
 def login(request, template="accounts/account_login.html"):
     """
@@ -69,22 +69,13 @@ def send_invite(request, template="invites/send_invite.html"):
             phone=dummy.registered_phone,
             creator=request.user,
         )
-        context = {
-            'code': code,
-            'login_url': request.build_absolute_uri(reverse("login")),
-            'site_name': settings.SITE_NAME,
-            'site_url': request.build_absolute_uri(reverse("home")),
-        }
+        site_url = request.build_absolute_uri(reverse("home"))
+        login_url = request.build_absolute_uri(reverse("login"))
         try:
-            send_mail_template(
-                "Your Invitation to %s" % settings.SITE_NAME,
-                "invites/send_invite_email",
-                settings.DEFAULT_FROM_EMAIL,
-                code.registered_to,
-                context=context,
-                fail_silently=False,
-            )
+            send_invite_code_mail(code, site_url, login_url)
         except Exception as e:
+            if settings.DEBUG:
+                raise
             error(request, "There was an error sending mail to %s. [%s]" % (
                 code.registered_to, e
             ))
