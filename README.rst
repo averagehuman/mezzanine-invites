@@ -90,7 +90,7 @@ Source is on `github`_.
 .. _django email docs: https://docs.djangoproject.com/en/dev/topics/email/
 
 Testing with tox/pytest
-'''''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Run tests with::
 
