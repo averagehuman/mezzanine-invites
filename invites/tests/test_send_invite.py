@@ -16,9 +16,9 @@ def _assert_redirect_to(_client, url):
     send_invite_url = reverse("send-invite")
     response = _client.get(send_invite_url, follow=True)
     assert response.redirect_chain
-    redirect_url, status_code = response.redirect_chain[-1]
+    redirected_to, status_code = response.redirect_chain[-1]
     assert status_code == 302
-    parsed = urlparse(redirect_url)
+    parsed = urlparse(redirected_to)
     assert parsed.path == url
     assert parsed.query == "next=%s" % send_invite_url
 
@@ -68,5 +68,4 @@ def test_non_interactive_send_invite_command():
     assert len(mail.outbox) == N
     call_command("invite", interactive=False, email=email, send=True)
     assert len(mail.outbox) == N+1
-
 

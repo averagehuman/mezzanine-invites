@@ -1,4 +1,6 @@
 
+from datetime import timedelta
+
 from django.utils import timezone
 from django.db import models
 from django.contrib.sites.models import Site
@@ -15,39 +17,44 @@ from .models import InvitationCode
 def get_or_create_user_from_code(code, timestamp):
     User = get_user_model()
     pk_field = User.USERNAME_FIELD
+    email = code.registered_to
     created = True
     try:
-        user = User.objects.get(pk_field=code.email)
+        user = User.objects.get(**{pk_field:email})
     except User.DoesNotExist:
         name = (code.registered_name or '').partition(' ')
-        all_kwargs = {
+        possible_kwargs = {
             'email': email,
             'username': email,
             'first_name': name[0],
-            'last_name': name[1],
+            'last_name': name[2],
             'name': code.registered_name,
             'fullname': code.registered_name,
             'full_name': code.registered_name,
-            'phone': code.phone,
-            'phone_number': code.phone,
+            'phone': code.registered_phone,
+            'phone_number': code.registered_phone,
             'date_joined': timestamp,
             'last_login': timestamp,
         }
         kwargs = {pk_field: email}
         for field in User._meta.fields:
             try:
-                kwargs[field.name] = all_kwargs[field.name]
+                kwargs[field.name] = possible_kwargs[field.name]
             except KeyError:
                 pass
         user = User(**kwargs)
         # WARNING - for convenience we set the user password to be the
         # invite code key itself. This gives an immediate way for the
-        # user to login but may be insecure because:
-        #    + the code may have been sent in a plain text email
-        #    + the code may not be very strong as a password
+        # user to login but may be insecure because the code:
+        #    + may have been sent in a plain text email
+        #    + is stored in plain text in the database
+        #    + may not be very strong as a password
         # This risk is mitigated by the INVITE_CODE_EXPIRY_DAYS setting
         # and by a 'set_unusable_password' call if the password hasn't
-        # been changed within the expiry time.
+        # been changed within the expiry time. Since code expiry and
+        # the setting of an usable password will only happen whenever a
+        # user actually uses an expired key, in strict environments there
+        # should be an additional out-of-band process to ensure the expiry.
         user.set_password(code.short_key)
         user.save()
     else:
@@ -67,9 +74,9 @@ class InviteAuthBackend(object):
         if not code:
             return
         # It is a valid code but although "code.expired == False", it might
-        # be lying and may actually be expired. If it is lying we set
-        # "code.expired = True" below and eventually refuse to authenticate.
-        email = code.registered_to
+        # be lying and may actually be expired (for example, on the first login
+        # after the expiry date). If it is lying we set "code.expired = True"
+        # below and eventually refuse to authenticate.
         short_key = code.short_key
         now = timezone.now()
         expiry_days = getattr(settings, 'INVITE_CODE_EXPIRY_DAYS', 30)
@@ -81,10 +88,10 @@ class InviteAuthBackend(object):
             usage_window = int(settings.INVITE_CODE_USAGE_WINDOW)
         except (AttributeError, ValueError, TypeError):
             usage_window = 14
-        delta = timedelta(expiry_days + usage_window)
+        delta = timedelta(usage_window)
         update_fields = None
-        if not code.registered_date and (code.creation_date + delta) > now:
-            # never used and now expired code
+        if not code.registered_date and (now - code.created_date) > delta:
+            # never used and now out of date code
             code.expired = True
             code.key = ''
             update_fields = ['expired', 'key']
@@ -98,7 +105,7 @@ class InviteAuthBackend(object):
             else:
                 # is registered but check expiry
                 delta = timedelta(days=expiry_days)
-                if not delta or (code.registered_date + delta) > now:
+                if not delta or (now - code.registered_date) > delta:
                     # code is expired
                     code.expired = True
                     code.key = ''
