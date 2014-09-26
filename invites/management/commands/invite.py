@@ -10,6 +10,8 @@ import sys
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import NoArgsCommand
+from django.core.urlresolvers import reverse
 from django.db import DEFAULT_DB_ALIAS
 from django.utils.encoding import force_str, force_text
 from django.contrib.sites.models import Site
@@ -18,9 +20,9 @@ from django.utils.six.moves import input
 from invites.models import InvitationCode
 from invites.utils import send_invite_code_mail
 
-class Command(BaseCommand):
+class Command(NoArgsCommand):
 
-    option_list = BaseCommand.option_list + (
+    option_list = NoArgsCommand.option_list + (
         make_option('--email', dest='email',
             help="The email address of the invitee"),
         make_option('--domain', dest='domain',
@@ -28,6 +30,15 @@ class Command(BaseCommand):
         make_option('--database', action='store', dest='database',
             default=DEFAULT_DB_ALIAS,
             help='Specifies the database to use. Default is "default".'),
+        make_option('--noinput', action='store_false', dest='interactive',
+            default=True,
+            help='Tells Django to NOT prompt the user for input of any kind.'),
+        make_option('--send', action='store_true', dest='send',
+            default=False,
+            help='Send the Invite Code to the invitee right away.'),
+        make_option('--https', action='store_true', dest='https',
+            default=False,
+            help="The site urls within the sent email should use 'https'"),
     )
     help = 'Create an Invite Code'
 
@@ -36,12 +47,17 @@ class Command(BaseCommand):
         database = options.get('database')
         email = options.get('email')
         domain = options.get('domain')
+        interactive = options.get('interactive')
+        send = options.get('send')
+        https = options.get('https')
         sites = Site.objects.all()
         site_items = dict((str(obj.id), obj) for obj in sites)
         site = None
         if not site_items:
             raise CommandError("No site available.")
         while not email:
+            if not interactive:
+                raise CommandError("Missing parameter 'email'")
             email = (input(
                 force_str('Enter the email address of the recipient: ')
             ) or '').strip()
@@ -55,6 +71,8 @@ class Command(BaseCommand):
             if len(site_items) == 1:
                 site = sites[0]
             while site is None:
+                if not interactive:
+                    raise CommandError("Missing parameter 'domain'")
                 for obj in sites:
                     self.stdout.write("[%s] %s" % (obj.id, obj.domain))
                 site_id = input(force_str('Select a site: '))
@@ -65,6 +83,9 @@ class Command(BaseCommand):
         code = InvitationCode.objects.create_invite_code(email, site=site)
         do_send = None
         while do_send is None:
+            if not interactive:
+                do_send = 'y' if send else 'n'
+                break
             do_send = (input(
                 force_str('Send the code now? [y/N]')
             ) or '').strip().lower()
@@ -74,6 +95,9 @@ class Command(BaseCommand):
         if do_send == 'y':
             secure = None
             while secure is None:
+                if not interactive:
+                    secure = 'y' if https else 'n'
+                    break
                 secure = (input(
                     force_str('Use https for site urls in the email? [y/N]')
                 ) or '').strip().lower()
@@ -88,11 +112,10 @@ class Command(BaseCommand):
             try:
                 send_invite_code_mail(code, site_url, login_url)
             except Exception as e:
-                self.stdout.write("Mail send error - %s" % e)
-                sys.exit("FAIL")
+                self.stderr.write("Mail send error - %s" % e)
                 return
             else:
-                self.stdout.write("Mail sent to %s." code.registered_to)
+                self.stdout.write("Mail sent to %s." % code.registered_to)
         else:
             self.stdout.write(code.short_key)
 

@@ -7,6 +7,7 @@ except ImportError:
 
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.core.management import call_command, CommandError
 from django.contrib.auth import get_user_model
 import pytest
 
@@ -39,14 +40,33 @@ def test_staff_are_allowed(admin_client):
 @pytest.mark.django_db
 def test_send_invite_view(admin_client):
     email = 'tester@test.com'
-    User = get_user_model()
-    assert User.objects.filter(email=email).count() == 0
     N = len(mail.outbox)
     response = admin_client.post(
         reverse("send-invite"), {'registered_to': 'tester@test.com'},
         follow=True,
     )
     assert response.status_code == 200
+    assert len(mail.outbox) == N+1
+
+@pytest.mark.django_db
+def test_non_interactive_send_invite_command():
+    # email is required
+    with pytest.raises(CommandError) as e:
+        call_command("invite", interactive=False)
+    assert e.value.args[0] == "Missing parameter 'email'"
+
+    # if domain is given, a matching Site must exist
+    email = 'tester@test.com'
+    with pytest.raises(CommandError) as e:
+        call_command("invite", interactive=False, email=email, domain="nope")
+    assert e.value.args[0] == "A site with domain 'nope' does not exist"
+
+    # if no domain is given, the default is used, but no mail is sent unless
+    # specifically requested
+    N = len(mail.outbox)
+    call_command("invite", interactive=False, email=email)
+    assert len(mail.outbox) == N
+    call_command("invite", interactive=False, email=email, send=True)
     assert len(mail.outbox) == N+1
 
 
