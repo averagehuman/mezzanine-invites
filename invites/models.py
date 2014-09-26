@@ -10,6 +10,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.utils.crypto import get_random_string
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+from django.contrib.auth.hashers import (
+    check_password, make_password, is_password_usable
+)
 
 
 from django_extensions.db.fields import (
@@ -22,10 +25,12 @@ AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 def get_code_length():
     try:
         n = int(settings.INVITE_CODE_LENGTH)
-    except (AttributeError, ValueError):
+    except (AttributeError, ValueError, TypeError):
         n = 9
-    if n < 3:
+    if n < 6:
         raise Exception("INVITE_CODE_LENGTH must be at least 3")
+    if n > 30:
+        raise Exception("INVITE_CODE_LENGTH must be at most 30")
     return n
 
 class InvitationCodeManager(models.Manager):
@@ -89,8 +94,10 @@ class InvitationCode(models.Model):
     registered_date = models.DateTimeField(
         _('registered date'), blank=True, null=True, editable=False
     )
+    key = models.CharField(
+        max_length=30, blank=True, null=True, editable=False
+    )
     expired = models.BooleanField(default=False)
-    key = models.CharField(max_length=12, blank=False, editable=False)
     objects = InvitationCodeManager()
 
     class Meta:
