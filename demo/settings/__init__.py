@@ -65,3 +65,7 @@ except ImportError:
 else:
     set_dynamic_settings(globals())
 
+AUTHENTICATION_BACKENDS = [
+    X for X in AUTHENTICATION_BACKENDS if 'mezzanine' not in X
+]
+

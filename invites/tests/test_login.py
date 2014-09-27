@@ -61,3 +61,25 @@ def test_valid_login_form_post_succeeds_and_creates_user(client):
     assert user.first_name == 'Colonel'
     assert user.last_name == 'Charles Arthur Mustard'
 
+@pytest.mark.django_db
+def test_standard_login_succeeds_and_creates_user(client):
+    email = 'princess@peach.com'
+    User = get_user_model()
+    assert User.objects.filter(username=email).count() == 0
+    code = InvitationCode.objects.create_invite_code(email)
+    assert client.login(**{'username': email, 'password': code.short_key})
+    assert User.objects.filter(username=email).count() ==1
+    user = User.objects.get(username=email)
+    assert user.email == email
+
+@pytest.mark.django_db
+def test_standard_login_with_wrong_email_fails(client):
+    email = 'horry@patter.com'
+    User = get_user_model()
+    assert User.objects.filter(username=email).count() == 0
+    code = InvitationCode.objects.create_invite_code(email)
+    assert not client.login(
+        **{'username': 'wrong@wronger.com', 'password': code.short_key}
+    )
+    assert User.objects.filter(username=email).count() == 0
+

@@ -5,16 +5,18 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.sites.models import Site
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.utils.crypto import get_random_string
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 
 from mezzanine.conf import settings
+from mezzanine.core.auth_backends import MezzanineBackend
 
 from .models import InvitationCode
 
-class InviteAuthBackend(object):
+class InviteAuthBackend(MezzanineBackend):
     """A custom authentication backend that checks validity of an 'invite key'
 
     Designed to give quick access to a site to known potential users. An
@@ -86,14 +88,17 @@ class InviteAuthBackend(object):
 
     def authenticate(self, **kwargs):
         invite_key = kwargs.pop("invite_key", None)
-        email = kwargs.pop("email", None)
-        if not invite_key:
-            return
-        code = InvitationCode.objects.get_code_from_key_if_valid(
-            invite_key, email
-        )
+        invite_key = invite_key or kwargs.get("password", None)
+        email = kwargs.get("email", None)
+        email = email or kwargs.get("username", None)
+        code = None
+        if invite_key:
+            code = InvitationCode.objects.get_code_from_key_if_valid(
+                invite_key, email
+            )
         if not code:
-            return
+            # try regular login
+            return super(InviteAuthBackend, self).authenticate(**kwargs)
         # It is a valid code but although "code.expired == False", it might
         # be lying and may actually be expired (for example, on the first login
         # after the expiry date). If it is lying we set "code.expired = True"
