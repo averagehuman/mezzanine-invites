@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-__version__ = '0.0.2'
+__version__ = '0.2.0'
 
 class Tox(TestCommand):
     def finalize_options(self):
@@ -21,13 +21,26 @@ class Tox(TestCommand):
 
 
 setup(
-    name="invites",
+    name="mezzanine-invites",
     version=__version__,
-    description="Extensions for Mezzanine Drum.",
-    download_url="",
+    description="Authentication Backend for Mezzanine that allows site registration via"
+    " alphanumeric invite codes.",
+    author="gmf",
+    author_email="gmflanagan@outlook.com",
+    license="MIT",
+    url="https://pypi.python.org/pypi/mezzanine-invites",
+    download_url="https://pypi.python.org/packages/source/m/mezzanine-invites/mezzanine-invites-%s.tar.gz" % __version__ ,
     packages = find_packages(),
     tests_require=['tox'],
     cmdclass = {'test': Tox},
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Framework :: Django',
+    ],
 )
     
 
