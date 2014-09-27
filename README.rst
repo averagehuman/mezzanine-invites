@@ -6,7 +6,7 @@ A `Mezzanine`_ application that allows site registration via alphanumeric
 invite codes. It is designed to enable a quick sign up process for invited
 potential site users.
 
-Development - `https://github.com/averagehuman/mezzanine-invites`_
+Development - `<https://github.com/averagehuman/mezzanine-invites>`_
 
 Requirements
 ------------
