@@ -15,24 +15,24 @@ short alphanumeric token) is sent to the invitee and, if they choose to use
 it, the first login with the code will create a new site user.
 
 An Invite Code must be used to register within the number of days given by
-the `INVITE_CODE_USAGE_WINDOW` setting (default 14 days), and once
+the ``INVITE_CODE_USAGE_WINDOW`` setting (default 14 days), and once
 registered, the code is valid for the number of days given by
-`INVITE_CODE_EXPIRY_DAYS` (default 30 days).
+``INVITE_CODE_EXPIRY_DAYS`` (default 30 days).
 
 The code is always of the form::
 
     <Three or more uppercase letters><three digits>
 
-For example, ABCXYZ123. The default code length is 9 but this is
-configurable via the `INVITE_CODE_LENGTH` setting.
+For example, ``ABCXYZ123``. The default code length is 9 but this is
+configurable via the ``INVITE_CODE_LENGTH`` setting.
 
 
-The `send_invite` view
+The ``send_invite`` view
 ----------------------
 
-Include `invites.urls` in your URL_CONF to get a staff-only view called
+Include ``invites.urls`` in your ``URL_CONF`` to get a staff-only view called
 *send-invite* which will display a form with email, name and phone fields.
-Click `Send Invite` to send an email with the unique code to the recipient.
+Click ``Send Invite`` to send an email with the unique code to the recipient.
 
 The `invite` management command
 -------------------------------
