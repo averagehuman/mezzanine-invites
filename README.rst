@@ -73,7 +73,8 @@ The ``INVITE_CODE_USAGE_WINDOW`` setting determines how many days before an
 Invite Token must be used.
 
 Once used to register with a site the ``INVITE_CODE_EXPIRY_DAYS`` setting
-determines how many days before the Invite Token becomes invalid.
+determines how many days before the Invite Token becomes invalid as a login
+token.
 
 In order for the invite code to be acceptable as a login token, add the
 ``InviteAuthBackend`` to the list of ``AUTHENTICATION_BACKENDS`` in settings::
@@ -91,11 +92,16 @@ authentication::
         "invites.auth.InviteAuthBackend",
     )
 
-But note that if you have ``mezzanine.accounts`` in your ``INSTALLED_APPS``
-setting, then ``MezzanineBackend`` will be added to the list of backends
-anyway by the ``set_dynamic_settings`` call in your settings module.
+The difference between the two setups is that if ``MezzanineBackend`` is
+picking up the standard username/password login then it won't authenticate the
+*first* use of an Invite Code or, obviously, create the newly-registered user,
+whereas ``InviteAuthBackend`` will do both of those things.
 
-Either setup should be fine in any case.
+Note, however, that if you have ``mezzanine.accounts`` in your
+``INSTALLED_APPS`` setting, then ``MezzanineBackend`` will be added to the
+list of backends anyway by the ``set_dynamic_settings`` call in your settings
+module.
+
 
 Templates
 ---------
@@ -109,32 +115,28 @@ The following templates are used.
 Caution
 -------
 
-::
+This is an inherently less secure means of authentication compared to
+the regular username/password flow. The Invite Code Token gives immediate
+site access and yet:
 
-    This is an inherently less secure means of authentication compared to
-    the regular username/password flow. The Invite Code Token gives immediate
-    site access and yet:
+    + may have been sent in a plain text email
+    + exists in the database in plain text form
+    + does not require knowledge of the associated username
+    + may not be very strong cryptographically
 
-        + may have been sent in a plain text email
-        + exists in the database in plain text form
-        + does not require knowledge of the associated username
-        + may not be very strong cryptographically
+This inherent risk is mitigated by the ``INVITE_CODE_EXPIRY_DAYS`` setting.
+In strict environments, both the ``INVITE_CODE_EXPIRY_DAYS`` and
+``INVITE_CODE_USAGE_WINDOW`` settings should be low numbers. Once expired, a
+user will still be registered and active but will not be able to login until
+they have set up their own password by the standard means, eg. via a
+**Forgotten Passord?** form.
 
-    In addition, for the convenience of (possibly unsophisticated) users, on
-    first usage of an Invite Token, the newly created user's password is set
-    to this same token. This enables a user to immediately use the regular
-    'username/password' login form if they so wish but leaves them with a less
-    secure password than otherwise.
+Setting ``INVITE_CODE_EXPIRY_DAYS`` to **0** will cause Invite Codes to be
+effectively "one-shot" tokens.
 
-    This inherent risk is mitigated by the INVITE_CODE_EXPIRY_DAYS setting
-    and by a 'set_unusable_password' call if the password hasn't been changed
-    within the expiry time. In strict environments, both the
-    INVITE_CODE_EXPIRY_DAYS and INVITE_CODE_USAGE_WINDOW settings should be
-    low numbers. Once expired, a user will be forced to set up their own
-    password by the standard means. There ought to be additional out-of-band
-    checks for those users who haven't created a different password, ie. for
-    whom `check_password(<INVITE-TOKEN>)` is True.
-
+To expire a code that becomes invalid while that code's user is logged-in and
+has an active session, a middleware component might be implemented to check
+code expiry on each request and logout the user if necessary.
 
 Source and Issues
 -----------------
