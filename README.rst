@@ -138,7 +138,7 @@ In strict environments, both the ``INVITE_CODE_EXPIRY_DAYS`` and
 ``INVITE_CODE_USAGE_WINDOW`` settings should be low numbers. Once expired, a
 user will still be registered and active but will not be able to login until
 they have set up their own password by the standard means, eg. via a
-**Forgotten Passord?** form.
+**Forgotten Password** form.
 
 Setting ``INVITE_CODE_EXPIRY_DAYS`` to **0** will cause Invite Codes to be
 effectively "one-shot" tokens.
