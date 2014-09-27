@@ -6,11 +6,13 @@ A `Mezzanine`_ application that allows site registration via alphanumeric
 invite codes. It is designed to enable a quick sign up process for invited
 potential site users.
 
+Development - `https://github.com/averagehuman/mezzanine-invites`_
+
 Requirements
 ------------
 
-Has been tested with **Django 1.7** and the latest **Mezzanine (master)**
-using both **Python 2.7** and **Python 3.3**.
+Has been tested with **Django 1.7** and the latest **Mezzanine 3.1.*
+development branch (master)** using both **Python 2.7** and **Python 3.3**.
 
 Mezzanine versions **3.1.10** and earlier may also work if you can ignore or
 workaround `Issue 1114`_.
