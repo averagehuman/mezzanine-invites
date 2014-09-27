@@ -24,21 +24,26 @@ def login(request, template="accounts/account_login.html"):
     """
     Login form.
     """
-    form = LoginForm(request.POST or None)
-    quick_form = QuickLoginForm(request.POST or None)
+    form = LoginForm()
+    quick_form = QuickLoginForm()
     if request.method == "POST":
         if request.POST.get("login_type") == "quick":
-            f = quick_form
+            recvd = quick_form = QuickLoginForm(data=request.POST)
         else:
-            f = form
-        if f.is_valid():
-            authenticated_user = f.save()
+            recvd = form = LoginForm(data=request.POST)
+        if recvd.is_valid():
+            authenticated_user = recvd.save()
             info(request, _("Successfully logged in"))
             auth_login(request, authenticated_user)
             request.logged_in = True
             response = login_redirect(request)
             return response
-    context = {"form": form, "quick_form": quick_form, "title": _("Log in")}
+    context = {
+        "form": form,
+        "quick_form": quick_form,
+        "login_type": request.POST.get("login_type", None),
+        "title": _("Log in")
+    }
     return render(request, template, context)
 
 
