@@ -23,21 +23,21 @@ The code is always of the form::
 
     <Three or more uppercase letters><three digits>
 
-For example, ``ABCXYZ123``. The default code length is 9 but this is
+For example, **ABCXYZ123**. The default code length is 9 but this is
 configurable via the ``INVITE_CODE_LENGTH`` setting.
 
 
 The ``send_invite`` view
-----------------------
+------------------------
 
 Include ``invites.urls`` in your ``URL_CONF`` to get a staff-only view called
-*send-invite* which will display a form with email, name and phone fields.
-Click ``Send Invite`` to send an email with the unique code to the recipient.
+``send-invite`` which will display a form with email, name and phone fields.
+Click **Send Invite** to send an email with the unique code to the recipient.
 
-The `invite` management command
--------------------------------
+The ``invite`` management command
+---------------------------------
 
-Create a code with the Django management command 'invite'::
+Create a code with the Django management command ``invite``::
 
     ./bin/django invite
 
@@ -47,7 +47,7 @@ You can also specify the email as a paramter::
 
     ./bin/django invite --email=joe.soap@lux.com
 
-Invitation Codes are associated with a given `Site`, so if there are multiple
+Invitation Codes are associated with a given ``Site``, so if there are multiple
 sites,then you need to specify which by domain name::
 
     ./bin/django invite --domain=example.com
@@ -65,18 +65,18 @@ To send emails, an appropriate email backend must be configured. See the
 Settings
 --------
 
-The `INVITE_CODE_LENGTH` setting determines the length of the invite code.
+The ``INVITE_CODE_LENGTH`` setting determines the length of the invite code.
 It ought to be an integer greater than or equal to 6 and less than or equal
 to 30.
 
-The `INVITE_CODE_USAGE_WINDOW` setting determines how many days before an
+The ``INVITE_CODE_USAGE_WINDOW`` setting determines how many days before an
 Invite Token must be used.
 
-Once used to register with a site the `INVITE_CODE_EXPIRY_DAYS` setting
+Once used to register with a site the ``INVITE_CODE_EXPIRY_DAYS`` setting
 determines how many days before the Invite Token becomes invalid.
 
 In order for the invite code to be acceptable as a login token, add the
-`InviteAuthBackend` to the list of AUTHENTICATION_BACKENDS in settings::
+``InviteAuthBackend`` to the list of ``AUTHENTICATION_BACKENDS`` in settings::
 
     AUTHENTICATION_BACKENDS = (
         "mezzanine.core.auth_backends.MezzanineBackend",
