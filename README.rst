@@ -83,6 +83,29 @@ In order for the invite code to be acceptable as a login token, add the
         "invites.auth.InviteAuthBackend",
     )
 
+You can in fact just have ``InviteAuthBackend`` as the sole backend since it
+is a subclass of the ``MezzanineBackend`` and will fall back to the latter's 
+authentication::
+
+    AUTHENTICATION_BACKENDS = (
+        "invites.auth.InviteAuthBackend",
+    )
+
+But note that if you have ``mezzanine.accounts`` in your ``INSTALLED_APPS``
+setting, then ``MezzanineBackend`` will be added to the list of backends
+anyway by the ``set_dynamic_settings`` call in your settings module.
+
+Either setup should be fine in any case.
+
+Templates
+---------
+
+The following templates are used.
+
++ invites/send_invite.html
++ invites/send_invite_email.txt
++ invites/send_invite_email.html
+
 Caution
 -------
 
