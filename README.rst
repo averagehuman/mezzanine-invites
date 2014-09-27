@@ -117,11 +117,19 @@ module.
 Templates
 ---------
 
-The following templates are used.
+The following templates are required.
 
 + invites/send_invite.html
 + invites/send_invite_email.txt
 + invites/send_invite_email.html
+
+There are further templates to handle the default login scenario - a login
+page that has two forms, one a standard **username/password/captcha** form,
+and the other a **quick login** form requiring only the invite code.
+
++ accounts/account_form.html
++ accounts/account_login.html
+
 
 Caution
 -------
