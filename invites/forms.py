@@ -7,7 +7,7 @@ from captcha.fields import CaptchaField
 from mezzanine.core.forms import Html5Mixin
 from mezzanine.accounts import forms as base
 
-from .models import InvitationCode
+from .models import InvitationCode, InviteCodeHasExpired, InviteCodeIsOutOfDate
 
 def captcha():
     return CaptchaField(
@@ -37,7 +37,16 @@ class QuickLoginForm(Html5Mixin, forms.Form):
 
     def clean_key(self):
         key = self.cleaned_data["key"]
-        self._user = authenticate(invite_key=key)
+        try:
+            self._user = authenticate(invite_key=key)
+        except InviteCodeIsOutOfDate:
+            raise forms.ValidationError(ugettext("That code has expired."))
+        except InviteCodeHasExpired:
+            raise forms.ValidationError(
+                ugettext("That code has expired and can no longer be used. You"
+                " can set up a password by following the 'Forgotten Password'"
+                " link on this page.")
+            )
         if self._user is None:
             raise forms.ValidationError(ugettext("Invalid key"))
         elif not self._user.is_active:

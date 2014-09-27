@@ -22,6 +22,12 @@ from django_extensions.db.fields import (
 
 AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 
+class InviteCodeHasExpired(Exception):
+    pass
+
+class InviteCodeIsOutOfDate(Exception):
+    pass
+
 def get_code_length():
     try:
         n = int(settings.INVITE_CODE_LENGTH)
@@ -78,6 +84,9 @@ class InvitationCodeManager(models.Manager):
             return
         if not code.expired:
             return code
+        if code.registered_date:
+            raise InviteCodeHasExpired
+        raise InviteCodeIsOutOfDate
     
 class InvitationCode(models.Model):
     site = models.ForeignKey(Site, related_name="invite_codes")
