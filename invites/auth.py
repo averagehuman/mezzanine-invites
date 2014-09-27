@@ -68,19 +68,7 @@ class InviteAuthBackend(MezzanineBackend):
                 except KeyError:
                     pass
             user = User(**kwargs)
-            # WARNING - for convenience we set the user password to be the
-            # invite code key itself. This gives an immediate way for the
-            # user to login but is insecure because the code:
-            #    + may have been sent in a plain text email
-            #    + is stored in plain text in the database
-            #    + may not be very strong as a password
-            # This risk is mitigated by the INVITE_CODE_EXPIRY_DAYS setting
-            # and by a 'set_unusable_password' call if the password hasn't
-            # been changed within the expiry time. In strict environments
-            # there ought to be additional out-of-band checks for users who
-            # haven't created a different password, ie. for whom
-            # `check_password(<INVITE-TOKEN>)` is True.
-            user.set_password(code.short_key)
+            user.set_unusable_password()
             user.save()
         else:
             created = False
@@ -134,20 +122,8 @@ class InviteAuthBackend(MezzanineBackend):
                     # code is expired
                     code.expired = True
                     update_fields = ['expired']
-                    # may need to update user password
-                    if user.check_password(short_key):
-                        # it's still the (now invalid) invite code
-                        user.set_unusable_password()
-                        user.save()
         if update_fields:
             code.save(update_fields=update_fields)
         if not code.expired:
             return user
-
-    def get_user(self, user_id):
-        User = get_user_model()
-        try:
-            return User._default_manager.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
 
