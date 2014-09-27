@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 class Tox(TestCommand):
     def finalize_options(self):

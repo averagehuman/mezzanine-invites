@@ -155,7 +155,6 @@ AUTHENTICATION_BACKENDS = (
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "compressor.finders.CompressorFinder",
 )
 
 # The numeric mode to set newly-uploaded files to. The value should be
@@ -222,16 +221,11 @@ INSTALLED_APPS = (
     "mezzanine.conf",
     "mezzanine.core",
     "mezzanine.generic",
-    #"mezzanine.blog",
     "mezzanine.forms",
     "mezzanine.pages",
     "mezzanine.galleries",
     "mezzanine.twitter",
-    #"mezzanine_blocks",
     "mezzanine.accounts",
-    #"mezzanine.mobile",
-    "easy_thumbnails",
-    "django_extensions",
     "captcha",
     "django.contrib.admin",
     "django.contrib.auth",

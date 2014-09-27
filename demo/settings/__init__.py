@@ -8,15 +8,6 @@ from .defaults import *
 SECRET_KEY = "123456789!!987654321"
 NEVERCACHE_KEY = "abcdefg!!zyxwvu"
 
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
-AWS_SES_ACCESS_KEY_ID = ''
-AWS_SES_SECRET_ACCESS_KEY = ''
-AWS_STORAGE_BUCKET_NAME = ''
-
-GOOGLE_ANALYTICS_PROPERTY_ID = ''
-GOOGLE_ANALYTICS_DOMAIN = ''
-
 
 try:
     from .local_settings import *
@@ -26,16 +17,6 @@ except ImportError:
 ##########
 # CACHES #
 ##########
-if not NOCACHE:
-
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': ['127.0.0.1:11211'],
-            'KEY_PREFIX': 'django-test',
-            'TIMEOUT': 0,
-        },
-    }
 
 #############
 # DATABASES #

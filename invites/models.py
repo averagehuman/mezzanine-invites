@@ -1,4 +1,5 @@
 
+from django.utils import timezone
 from django.conf import settings
 from django.dispatch import receiver
 from django.db import models
@@ -14,11 +15,6 @@ from django.contrib.auth.hashers import (
     check_password, make_password, is_password_usable
 )
 
-
-from django_extensions.db.fields import (
-    ModificationDateTimeField, CreationDateTimeField, AutoSlugField,
-    UUIDField,
-)
 
 AUTH_USER_MODEL = settings.AUTH_USER_MODEL
 
@@ -90,8 +86,9 @@ class InvitationCodeManager(models.Manager):
     
 class InvitationCode(models.Model):
     site = models.ForeignKey(Site, related_name="invite_codes")
-    uuid = UUIDField(version=4, auto=True, unique=True)
-    created_date = CreationDateTimeField(_('created date'))
+    created_date = models.DateTimeField(
+        editable=False, blank=True, default=timezone.now
+    )
     created_by = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
     registered_to = models.EmailField('email', blank=False)
     registered_name = models.CharField(
