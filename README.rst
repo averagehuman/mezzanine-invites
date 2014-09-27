@@ -3,25 +3,39 @@ mezzanine-invites
 =================
 
 A `Mezzanine`_ application that allows site registration via alphanumeric
-invite codes. The code is always of the form::
-
-    [zero or more uppercase letters]<three digits>
-
-For example, ABCXYZ123. The default code length is 9 but this is
-configurable via the `INVITE_CODE_LENGTH` setting.
+invite codes. It is designed to enable a quick sign up process for invited
+potential site users.
 
 Usage
 -----
 
-Via the `send_invite` view
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+A site admin creates an Invite Code linked with at least the invitee's email
+address and possibly also their full name and phone number. This code's key (a
+short alphanumeric token) is sent to the invitee and, if they choose to use
+it, the first login with the code will create a new site user.
+
+An Invite Code must be used to register within the number of days given by
+the `INVITE_CODE_USAGE_WINDOW` setting (default 14 days), and once
+registered, the code is valid for the number of days given by
+`INVITE_CODE_EXPIRY_DAYS` (default 30 days).
+
+The code is always of the form::
+
+    <Three or more uppercase letters><three digits>
+
+For example, ABCXYZ123. The default code length is 9 but this is
+configurable via the `INVITE_CODE_LENGTH` setting.
+
+
+The `send_invite` view
+----------------------
 
 Include `invites.urls` in your URL_CONF to get a staff-only view called
 *send-invite* which will display a form with email, name and phone fields.
 Click `Send Invite` to send an email with the unique code to the recipient.
 
-Via the `invite` management command
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `invite` management command
+-------------------------------
 
 Create a code with the Django management command 'invite'::
 
@@ -52,7 +66,14 @@ Settings
 --------
 
 The `INVITE_CODE_LENGTH` setting determines the length of the invite code.
-It ought to be an integer greater or equal than 3.
+It ought to be an integer greater than or equal to 6 and less than or equal
+to 30.
+
+The `INVITE_CODE_USAGE_WINDOW` setting determines how many days before an
+Invite Token must be used.
+
+Once used to register with a site the `INVITE_CODE_EXPIRY_DAYS` setting
+determines how many days before the Invite Token becomes invalid.
 
 In order for the invite code to be acceptable as a login token, add the
 `InviteAuthBackend` to the list of AUTHENTICATION_BACKENDS in settings::
@@ -62,22 +83,34 @@ In order for the invite code to be acceptable as a login token, add the
         "invites.auth.InviteAuthBackend",
     )
 
-Then, once a valid code is entered, a new user is automatically created and
-logged in.
+Caution
+-------
 
-By default, the invite code is reusable as a login token - if this is not
-desirable then set::
+::
 
-    INVITE_CODES_ARE_REUSABLE = False
+    This is an inherently less secure means of authentication compared to
+    the regular username/password flow. The Invite Code Token gives immediate
+    site access and yet:
 
-in settings.
+        + may have been sent in a plain text email
+        + exists in the database in plain text form
+        + does not require knowledge of the associated username
+        + may not be very strong cryptographically
 
-If Invite Codes are not reusable after the first use, then it is up to the
-application to ensure that the invited user subsequently has some other means
-of authorisation. The simplest way to do this may be to have a custom
-`AUTH_USER_MODEL` with an email field as a primary key (ie. with unique=True),
-since in this case login can always be possible via the usual 'recover password'
-mechanism.
+    In addition, for the convenience of (possibly unsophisticated) users, on
+    first usage of an Invite Token, the newly created user's password is set
+    to this same token. This enables a user to immediately use the regular
+    'username/password' login form if they so wish but leaves them with a less
+    secure password than otherwise.
+
+    This inherent risk is mitigated by the INVITE_CODE_EXPIRY_DAYS setting
+    and by a 'set_unusable_password' call if the password hasn't been changed
+    within the expiry time. In strict environments, both the
+    INVITE_CODE_EXPIRY_DAYS and INVITE_CODE_USAGE_WINDOW settings should be
+    low numbers. Once expired, a user will be forced to set up their own
+    password by the standard means. There ought to be additional out-of-band
+    checks for those users who haven't created a different password, ie. for
+    whom `check_password(<INVITE-TOKEN>)` is True.
 
 
 Source and Issues
