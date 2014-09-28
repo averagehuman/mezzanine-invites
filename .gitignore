@@ -18,6 +18,8 @@ parts
 .settings/
 dist
 example.db
+demo.db
+test.db
 assets
 media
 xapian.index
