@@ -130,6 +130,29 @@ and the other a **quick login** form requiring only the invite code.
 + accounts/account_form.html
 + accounts/account_login.html
 
+Demo
+----
+
+To create a demo project with a sqlite backend run::
+
+    $ make demo
+
+Then create an invite code with an associated (not necessary valid) email::
+
+    $ make invite email=luke@force.com
+
+Copy the six character Invite Code that is printed out.
+
+Next run a test server with::
+
+    $ make serve
+
+and navigate to the login page. You should see two login forms - a standard
+username/password/captcha form and another "Quick" form requiring only an
+Invite Code. 
+
+You should be able to login with either form.
+
 
 Caution
 -------
