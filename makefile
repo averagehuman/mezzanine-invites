@@ -23,7 +23,7 @@ demo:
 
 .PHONY: invite
 invite:
-	@./bin/django invite --noinput --email=bob@builder.com 2>/dev/null
+	@./bin/django invite --noinput --email=${email} 2>/dev/null
 
 .PHONY: serve
 serve:
