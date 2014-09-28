@@ -27,5 +27,9 @@ invite:
 
 .PHONY: serve
 serve:
-	@./bin/django runserver 2>/dev/null
+	@./bin/django runserver
+
+.PHONY: shell
+shell:
+	@./bin/django shell
 
