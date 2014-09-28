@@ -3,6 +3,9 @@ include tox.ini
 include requirements.txt
 include requirements3.txt
 include makefile
+include bootstrap.py
+include buildout.cfg
+include LICENSE
 recursive-include invites/templates *
 recursive-include invites/tests/data *
 recursive-include demo *.py
